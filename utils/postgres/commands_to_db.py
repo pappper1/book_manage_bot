@@ -64,10 +64,10 @@ class Database:
 
 
 	@staticmethod
-	async def delete_book(id: int):
+	async def delete_book(book_id: int):
 		try:
 			await postgres_do_query("DELETE FROM books WHERE id = %s",
-			                        (id,))
+			                        (book_id,))
 
 		except Exception as e:
 			logger.exception(f"Ошибка при работа с базой данных: {e}")
@@ -83,10 +83,20 @@ class Database:
 
 
 	@staticmethod
-	async def get_book(id: int):
+	async def get_book(book_id: int):
 		try:
 			return await postgres_select_one("SELECT * FROM books WHERE id = %s",
-			                                 (id,))
+			                                 (book_id,))
+
+		except Exception as e:
+			logger.exception(f"Ошибка при работа с базой данных: {e}")
+
+
+	@staticmethod
+	async def get_books_by_category(category: str):
+		try:
+			return await postgres_select_all("SELECT * FROM books WHERE category = %s",
+			                                 (category,))
 
 		except Exception as e:
 			logger.exception(f"Ошибка при работа с базой данных: {e}")
