@@ -100,3 +100,13 @@ class Database:
 
 		except Exception as e:
 			logger.exception(f"Ошибка при работа с базой данных: {e}")
+
+
+	@staticmethod
+	async def find_book_results(text: str):
+		try:
+			return await postgres_select_all(f"SELECT * FROM books WHERE LOWER(title) LIKE %s OR LOWER(author) LIKE %s",
+			                                 (f"%{text}%", f"%{text}%"))
+
+		except Exception as e:
+			logger.exception(f"Ошибка при работа с базой данных: {e}")

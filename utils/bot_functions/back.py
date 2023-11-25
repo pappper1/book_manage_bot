@@ -1,6 +1,6 @@
 import data.keyboards.inline as ikb
 from data.media.texts import *
-from data.states import BookList
+from data.states import BookList, FindBook
 from loader import db
 
 
@@ -41,3 +41,14 @@ async def back_to_all_books(call, state):
 	await call.message.edit_text(text='Все книги:', reply_markup=await ikb.books(bot_page='list_books',
 	                                                                             books=books,
 	                                                                             current_page=1))
+
+
+async def back_to_books_by_results(call, state):
+	await FindBook.books_by_results.set()
+	data = await state.get_data()
+	text = data['text']
+	books = data['books']
+	await call.message.edit_text(text=f"⚜️ Результаты поиска по запросу - {text}:",
+	                             reply_markup=await ikb.books(bot_page='start',
+	                                                          books=books,
+	                                                          current_page=1))

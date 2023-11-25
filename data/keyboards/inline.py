@@ -12,14 +12,14 @@ async def start():
 	return ikb
 
 
-async def book_categories(bot_page: str, categories, current_page: int):
+async def book_categories(bot_page: str, categories: list, current_page: int, mode: str = 'book_list'):
 	ikb = InlineKeyboardMarkup()
 	categories_on_page = 6
-	pages = (len(categories) // categories_on_page) if len(categories) >= categories_on_page \
-		else (len(categories) // categories_on_page)+1
+	pages = (len(categories) // categories_on_page) + 1
 	next_page = (current_page + 1) if current_page != pages else 1
 	previous_page = (current_page - 1) if current_page != 1 else pages
 
+	add_category_button = InlineKeyboardButton(text='➕ Добавить жанр', callback_data='add_category')
 	previous_page_button = InlineKeyboardButton(text='🔚', callback_data=f"goto_{previous_page}")
 	current_page_button = InlineKeyboardButton(text=f"{current_page}", callback_data='selected')
 	next_page_button = InlineKeyboardButton(text='🔜', callback_data=f"goto_{next_page}")
@@ -30,6 +30,9 @@ async def book_categories(bot_page: str, categories, current_page: int):
 	for category in categories_for_page:
 		ikb.add(InlineKeyboardButton(text=f"{category['category_title']}",
 		                             callback_data=f"category_{category['category_title']}"))
+
+	if mode == 'book_list':
+		ikb.add(add_category_button)
 
 	ikb.add(previous_page_button, current_page_button, next_page_button).add(back_button)
 	return ikb
@@ -46,7 +49,7 @@ async def select_display_books_type(bot_page: str):
 	return ikb
 
 
-async def books(bot_page: str, books, current_page: int):
+async def books(bot_page: str, books: list, current_page: int):
 	ikb = InlineKeyboardMarkup()
 	books_on_page = 6
 	pages = (len(books) // books_on_page) if len(books) >= books_on_page else (len(books) // books_on_page)+1

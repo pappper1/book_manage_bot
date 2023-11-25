@@ -80,7 +80,8 @@ async def new_book_category_call(call: types.CallbackQuery, state: FSMContext):
 
 		await call.message.edit_reply_markup(reply_markup=await ikb.book_categories(bot_page='start',
 		                                                                            categories=categories,
-		                                                                            current_page=page))
+		                                                                            current_page=page,
+		                                                                            mode='add_book'))
 
 	elif call.data.startswith('category_'):
 		category = call.data.split('category_')[1]

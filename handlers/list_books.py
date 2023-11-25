@@ -1,10 +1,11 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
-from data.media.texts import start_text
+from data.media.texts import start_text, max_lenght_text
 from loader import dp, db
 import data.keyboards.inline as ikb
 from data.states import BookList
+from utils.bot_functions.bot_functions import delete_book
 
 
 @dp.callback_query_handler(text='list_books')
@@ -16,29 +17,31 @@ async def list_books(call: types.CallbackQuery):
 
 @dp.callback_query_handler(state=BookList.choose_type)
 async def select_display_books_type(call: types.CallbackQuery):
-	await call.answer('')
-
 	if call.data == 'all_books':
-		await BookList.all_books.set()
 		books = await db.get_all_books()
-		await call.message.edit_text(text='🗂 Все книги:', reply_markup=await ikb.books(bot_page='list_books',
-		                                                                             books=books,
-		                                                                             current_page=1))
+		if len(books) != 0:
+			await call.answer('')
+			await BookList.all_books.set()
+			await call.message.edit_text(text='🗂 Все книги:', reply_markup=await ikb.books(bot_page='list_books',
+		                                                                                    books=books,
+			                                                                                current_page=1))
+		else:
+			await call.answer(text='🔰 Ни одной книги ещё не добавлено!', show_alert=True)
 
 	elif call.data == 'books_by_categories':
+		await call.answer('')
 		await BookList.books_categories.set()
 		categories = await db.get_categories()
 		await call.message.edit_text(text='🔻 Выберите жанр, книги которого вы хотите увидеть:',
 		                             reply_markup=await ikb.book_categories(bot_page='list_books',
-		                                                                      categories=categories,
-		                                                                      current_page=1))
+	                                                                        categories=categories,
+	                                                                        current_page=1))
 
 
 @dp.callback_query_handler(state=BookList.books_categories)
 async def book_categories(call: types.CallbackQuery, state: FSMContext):
-	await call.answer('')
-
 	if call.data.startswith('goto_'):
+		await call.answer('')
 		page = int(call.data.split('goto_')[1])
 		categories = await db.get_categories()
 		try:
@@ -50,14 +53,41 @@ async def book_categories(call: types.CallbackQuery, state: FSMContext):
 
 
 	elif call.data.startswith('category_'):
-		await BookList.books_by_categories.set()
 		category = call.data.split('category_')[1]
 		books = await db.get_books_by_category(category=category)
-		await state.update_data(category=category)
-		await call.message.edit_text(text=f'📚 Книги по жанру "{category}":',
-		                             reply_markup=await ikb.books(bot_page='books_categories',
-		                                                          books=books,
-		                                                          current_page=1))
+		if len(books) != 0:
+			await call.answer('')
+			await BookList.books_by_categories.set()
+			await state.update_data(category=category)
+			await call.message.edit_text(text=f'📚 Книги по жанру "{category}":',
+			                             reply_markup=await ikb.books(bot_page='books_categories',
+			                                                          books=books,
+			                                                          current_page=1))
+		else:
+			await call.answer(text='🔰 В этом жанре ещё нет книг!', show_alert=True)
+
+	elif call.data == 'add_category':
+		await BookList.add_category.set()
+		await call.answer('')
+		await call.message.edit_text(text='📝 Введите название нового жанра:',
+		                             reply_markup=await ikb.back(bot_page='list_books'))
+
+
+@dp.message_handler(state=BookList.add_category)
+async def add_category(message: types.Message):
+	category = message.text
+	if len(category) > 256:
+		await message.answer(text=max_lenght_text, reply_markup=await ikb.back(bot_page='list_books'))
+
+	else:
+		await BookList.books_categories.set()
+		await db.add_category(title=category)
+		await message.answer(text=f'✅ Жанр "{category}" успешно добавлен!')
+		categories = await db.get_categories()
+		await message.answer(text='🔻 Выберите жанр, книги которого вы хотите увидеть:',
+                             reply_markup=await ikb.book_categories(bot_page='list_books',
+	                                                                   categories=categories,
+                                                                       current_page=1))
 
 
 @dp.callback_query_handler(state=BookList.books_by_categories)
@@ -79,10 +109,10 @@ async def books_by_categories(call: types.CallbackQuery, state: FSMContext):
 		await BookList.in_book.set()
 		book_id = int(call.data.split('book_')[1])
 		book = await db.get_book(book_id=book_id)
-		text = f"Книга: {book['title']}\n\n" \
-		       f"Автор: {book['author']}\n\n" \
-		       f"Жанр: {book['category']}\n\n" \
-		       f"Описание: {book['description']}"
+		text = f"📕 Книга: {book['title']}\n\n" \
+		       f"👨‍💼 Автор: {book['author']}\n\n" \
+		       f"💈 Жанр: {book['category']}\n\n" \
+		       f"📜 Описание: {book['description']}"
 		await call.message.edit_text(text=text,
 		                             reply_markup=await ikb.book(bot_page='books_by_categories' ,book_id=book_id))
 
@@ -90,12 +120,7 @@ async def books_by_categories(call: types.CallbackQuery, state: FSMContext):
 @dp.callback_query_handler(state=BookList.in_book)
 async def in_book(call: types.CallbackQuery, state: FSMContext):
 	if call.data.startswith('delete_book_'):
-		book_id = int(call.data.split('delete_book_')[1])
-		await state.finish()
-		await db.delete_book(book_id=book_id)
-		await call.answer(text='🔰 Книга удалена!', show_alert=True)
-		await call.message.answer(text=start_text, reply_markup=await ikb.start())
-		await call.message.delete()
+		await delete_book(call, state, db, start_text, ikb)
 
 
 @dp.callback_query_handler(state=BookList.all_books)

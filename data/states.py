@@ -11,7 +11,15 @@ class BookList(StatesGroup):
 
 	all_books = State()
 	books_categories = State()
+	add_category = State()
 
 	books_by_categories = State()
+
+	in_book = State()
+
+class FindBook(StatesGroup):
+	results = State()
+
+	books_by_results = State()
 
 	in_book = State()

@@ -22,7 +22,8 @@ async def back(call: types.CallbackQuery, state: FSMContext):
 		'list_books': back_to_list_books,
 		'books_categories': back_to_books_categories,
 		'books_by_categories': back_to_books_by_categories,
-		'all_books': back_to_all_books
+		'all_books': back_to_all_books,
+		'books_by_results': back_to_books_by_results,
 	}
 
 	await bot_pages[bot_page](call, state)
