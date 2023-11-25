@@ -15,7 +15,7 @@ async def start():
 async def book_categories(bot_page: str, categories, current_page: int):
 	ikb = InlineKeyboardMarkup()
 	categories_on_page = 6
-	pages = (len(categories) // categories_on_page) if len(categories) <= categories_on_page \
+	pages = (len(categories) // categories_on_page) if len(categories) >= categories_on_page \
 		else (len(categories) // categories_on_page)+1
 	next_page = (current_page + 1) if current_page != pages else 1
 	previous_page = (current_page - 1) if current_page != 1 else pages
@@ -49,7 +49,7 @@ async def select_display_books_type(bot_page: str):
 async def books(bot_page: str, books, current_page: int):
 	ikb = InlineKeyboardMarkup()
 	books_on_page = 6
-	pages = (len(books) // books_on_page) if len(books) <= books_on_page else (len(books) // books_on_page)+1
+	pages = (len(books) // books_on_page) if len(books) >= books_on_page else (len(books) // books_on_page)+1
 	next_page = (current_page + 1) if current_page != pages else 1
 	previous_page = (current_page - 1) if current_page != 1 else pages
 

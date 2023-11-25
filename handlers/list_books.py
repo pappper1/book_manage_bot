@@ -8,14 +8,14 @@ from data.states import BookList
 
 
 @dp.callback_query_handler(text='list_books')
-async def list_books(call: types.CallbackQuery, state: FSMContext):
+async def list_books(call: types.CallbackQuery):
 	await BookList.choose_type.set()
 	await call.message.edit_text(text='🔻 Выберите способ отображения книг:',
 	                             reply_markup=await ikb.select_display_books_type(bot_page='start'))
 
 
 @dp.callback_query_handler(state=BookList.choose_type)
-async def select_display_books_type(call: types.CallbackQuery, state: FSMContext):
+async def select_display_books_type(call: types.CallbackQuery):
 	await call.answer('')
 
 	if call.data == 'all_books':
@@ -41,9 +41,13 @@ async def book_categories(call: types.CallbackQuery, state: FSMContext):
 	if call.data.startswith('goto_'):
 		page = int(call.data.split('goto_')[1])
 		categories = await db.get_categories()
-		await call.message.edit_reply_markup(reply_markup=await ikb.book_categories(bot_page='list_books',
-		                                                                            categories=categories,
-		                                                                            current_page=page))
+		try:
+			await call.message.edit_reply_markup(reply_markup=await ikb.book_categories(bot_page='list_books',
+			                                                                            categories=categories,
+			                                                                            current_page=page))
+		except:
+			pass
+
 
 	elif call.data.startswith('category_'):
 		await BookList.books_by_categories.set()
@@ -64,9 +68,12 @@ async def books_by_categories(call: types.CallbackQuery, state: FSMContext):
 		page = int(call.data.split('goto_')[1])
 		category = (await state.get_data())['category']
 		books = await db.get_books_by_category(category=category)
-		await call.message.edit_reply_markup(reply_markup=await ikb.books(bot_page='books_categories',
-		                                                                  books=books,
-		                                                                  current_page=page))
+		try:
+			await call.message.edit_reply_markup(reply_markup=await ikb.books(bot_page='books_categories',
+			                                                                  books=books,
+			                                                                  current_page=page))
+		except:
+			pass
 
 	elif call.data.startswith('book_'):
 		await BookList.in_book.set()
@@ -82,8 +89,6 @@ async def books_by_categories(call: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(state=BookList.in_book)
 async def in_book(call: types.CallbackQuery, state: FSMContext):
-	await call.answer('')
-
 	if call.data.startswith('delete_book_'):
 		book_id = int(call.data.split('delete_book_')[1])
 		await state.finish()
@@ -94,15 +99,18 @@ async def in_book(call: types.CallbackQuery, state: FSMContext):
 
 
 @dp.callback_query_handler(state=BookList.all_books)
-async def all_books(call: types.CallbackQuery, state: FSMContext):
+async def all_books(call: types.CallbackQuery):
 	await call.answer('')
 
 	if call.data.startswith('goto_'):
 		page = int(call.data.split('goto_')[1])
 		books = await db.get_all_books()
-		await call.message.edit_reply_markup(reply_markup=await ikb.books(bot_page='list_books',
-		                                                                  books=books,
-		                                                                  current_page=page))
+		try:
+			await call.message.edit_reply_markup(reply_markup=await ikb.books(bot_page='list_books',
+			                                                                  books=books,
+			                                                                  current_page=page))
+		except:
+			pass
 
 	elif call.data.startswith('book_'):
 		await BookList.in_book.set()
