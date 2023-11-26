@@ -17,7 +17,7 @@ async def start():
 
 # Клавиатуара жанров книг
 async def book_categories(
-    bot_page: str, categories: list, current_page: int, mode: str = "book_list"
+    bot_page: str, categories: list, current_page: int, mode: str
 ):
     ikb = InlineKeyboardMarkup()
     categories_on_page = 6
@@ -32,7 +32,7 @@ async def book_categories(
         text="🔚", callback_data=f"goto_{previous_page}"
     )
     current_page_button = InlineKeyboardButton(
-        text=f"{current_page}", callback_data="selected"
+        text=f"{current_page}/{pages}", callback_data="selected"
     )
     next_page_button = InlineKeyboardButton(text="🔜", callback_data=f"goto_{next_page}")
     back_button = InlineKeyboardButton(text="🔚 Назад", callback_data=f"back_{bot_page}")
@@ -49,7 +49,7 @@ async def book_categories(
             )
         )
 
-    if mode == "book_list":
+    if mode == "book_list" and current_page == 1:
         ikb.add(add_category_button)
 
     ikb.add(previous_page_button, current_page_button, next_page_button).add(
@@ -88,7 +88,7 @@ async def books(bot_page: str, books: list, current_page: int):
         text="🔚", callback_data=f"goto_{previous_page}"
     )
     current_page_button = InlineKeyboardButton(
-        text=f"{current_page}", callback_data="selected"
+        text=f"{current_page}/{pages}", callback_data="selected"
     )
     next_page_button = InlineKeyboardButton(text="🔜", callback_data=f"goto_{next_page}")
     back_button = InlineKeyboardButton(text="🔚 Назад", callback_data=f"back_{bot_page}")
@@ -98,7 +98,7 @@ async def books(bot_page: str, books: list, current_page: int):
     for book in books_for_page:
         ikb.add(
             InlineKeyboardButton(
-                text=f"{book['title']}", callback_data=f"book_{book['id']}"
+                text=f"{book['title']} | {book['author']}", callback_data=f"book_{book['id']}"
             )
         )
 

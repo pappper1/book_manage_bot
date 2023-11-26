@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
-from data.media.texts import start_text
+from data.media.texts import *
 from loader import dp, db
 import data.keyboards.inline as ikb
 from data.states import FindBook
@@ -14,7 +14,7 @@ async def find_book(call: types.CallbackQuery):
     await call.answer("")
     await FindBook.results.set()
     await call.message.answer(
-        text='Введите ключевое слово или фразу для поиска в полях "Название" и "Автор":',
+        text=to_find_text,
         reply_markup=await ikb.back(bot_page="start"),
     )
 
@@ -28,12 +28,12 @@ async def find_book_results(message: types.Message, state: FSMContext):
         await FindBook.books_by_results.set()
         await state.update_data(books=books, text=text)
         await message.answer(
-            text=f"⚜️ Результаты поиска по запросу - {text}:",
+            text=f"{find_results_text} {text}:",
             reply_markup=await ikb.books(bot_page="start", books=books, current_page=1),
         )
     else:
         await state.finish()
-        await message.answer(text="⛔️ По вашему запросу ничего не найдено.")
+        await message.answer(text=no_results_text)
         await message.answer(text=start_text, reply_markup=await ikb.start())
 
 

@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
-from data.media.texts import start_text, max_lenght_text
+from data.media.texts import *
 from loader import dp, db
 import data.keyboards.inline as ikb
 from data.states import BookList
@@ -13,7 +13,7 @@ from utils.bot_functions.bot_functions import delete_book
 async def list_books(call: types.CallbackQuery):
     await BookList.choose_type.set()
     await call.message.edit_text(
-        text="🔻 Выберите способ отображения книг:",
+        text=display_books_type_text,
         reply_markup=await ikb.select_display_books_type(bot_page="start"),
     )
 
@@ -27,14 +27,14 @@ async def select_display_books_type(call: types.CallbackQuery):
             await call.answer("")
             await BookList.all_books.set()
             await call.message.edit_text(
-                text="🗂 Все книги:",
+                text=all_books_text,
                 reply_markup=await ikb.books(
                     bot_page="list_books", books=books, current_page=1
                 ),
             )
         else:
             await call.answer(
-                text="🔰 Ни одной книги ещё не добавлено!", show_alert=True
+                text=no_books_text, show_alert=True
             )
 
     elif call.data == "books_by_categories":
@@ -42,10 +42,9 @@ async def select_display_books_type(call: types.CallbackQuery):
         await BookList.books_categories.set()
         categories = await db.get_categories()
         await call.message.edit_text(
-            text="🔻 Выберите жанр, книги которого вы хотите увидеть:",
-            reply_markup=await ikb.book_categories(
-                bot_page="list_books", categories=categories, current_page=1
-            ),
+            text=category_choose_text,
+            reply_markup=await ikb.book_categories(bot_page="list_books", categories=categories, current_page=1,
+                                                   mode='book_list'),
         )
 
 
@@ -58,9 +57,8 @@ async def book_categories(call: types.CallbackQuery, state: FSMContext):
         categories = await db.get_categories()
         try:
             await call.message.edit_reply_markup(
-                reply_markup=await ikb.book_categories(
-                    bot_page="list_books", categories=categories, current_page=page
-                )
+                reply_markup=await ikb.book_categories(bot_page="list_books", categories=categories, current_page=page,
+                                                       mode='book_list')
             )
         except:
             pass
@@ -73,19 +71,19 @@ async def book_categories(call: types.CallbackQuery, state: FSMContext):
             await BookList.books_by_categories.set()
             await state.update_data(category=category)
             await call.message.edit_text(
-                text=f'📚 Книги по жанру "{category}":',
+                text=f'{books_for_category_text} "{category}":',
                 reply_markup=await ikb.books(
                     bot_page="books_categories", books=books, current_page=1
                 ),
             )
         else:
-            await call.answer(text="🔰 В этом жанре ещё нет книг!", show_alert=True)
+            await call.answer(text=no_books_text, show_alert=True)
 
     elif call.data == "add_category":
         await BookList.add_category.set()
         await call.answer("")
         await call.message.edit_text(
-            text="📝 Введите название нового жанра:",
+            text=new_category_text,
             reply_markup=await ikb.back(bot_page="list_books"),
         )
 
@@ -105,10 +103,9 @@ async def add_category(message: types.Message):
         await message.answer(text=f'✅ Жанр "{category}" успешно добавлен!')
         categories = await db.get_categories()
         await message.answer(
-            text="🔻 Выберите жанр, книги которого вы хотите увидеть:",
-            reply_markup=await ikb.book_categories(
-                bot_page="list_books", categories=categories, current_page=1
-            ),
+            text=category_choose_text,
+            reply_markup=await ikb.book_categories(bot_page="list_books", categories=categories, current_page=1,
+                                                   mode='book_list'),
         )
 
 

@@ -64,9 +64,8 @@ async def new_book_description(message: types.Message, state: FSMContext):
     await state.update_data(description=description, categories=categories)
     await message.answer(
         text=new_book_category_text,
-        reply_markup=await ikb.book_categories(
-            bot_page="start", categories=categories, current_page=1
-        ),
+        reply_markup=await ikb.book_categories(bot_page="start", categories=categories, current_page=1,
+                                               mode='None'),
     )
 
 
@@ -105,12 +104,8 @@ async def new_book_category_call(call: types.CallbackQuery, state: FSMContext):
         page = int(call.data.split("goto_")[1])
 
         await call.message.edit_reply_markup(
-            reply_markup=await ikb.book_categories(
-                bot_page="start",
-                categories=categories,
-                current_page=page,
-                mode="add_book",
-            )
+            reply_markup=await ikb.book_categories(bot_page="start", categories=categories, current_page=page,
+                                                   mode="None")
         )
 
     elif call.data.startswith("category_"):
