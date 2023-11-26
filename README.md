@@ -26,7 +26,7 @@ BookManage Bot
 Инструкция по установке:
 1. Установить Python(3.11) с официального сайта(https://www.python.org/downloads/)
 2. Установить Git
-3. Установить pgadmin4
+3. Установить pgadmin4, создать базу данных.
 4. Открыть консоль или редактор кода, перейти в директорию, в которую хотите установить бота и прописать git clone https://github.com/pappper1/book_manage_bot
 5. Открыть файл settings.ini и ввести все данные(без ковычек и тд.), токен для телеграм бота создать в BotFather
 6. Прописать в консоли команду pip install -r requirements.txt
